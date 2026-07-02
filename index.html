@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>WOLFSTATION HW: Split Fiction B2</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        ws: { bg: '#05050a', sciCyan: '#06b6d4', fanGold: '#f59e0b', void: '#8b5cf6' }
+                    },
+                    fontFamily: { epic: ['Orbitron', 'sans-serif'], ui: ['Rajdhani', 'sans-serif'], base: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #05050a; color: #f8fafc; font-family: 'Inter', sans-serif; display: flex; justify-content: center; min-height: 100vh; margin: 0; background-image: radial-gradient(circle at center, rgba(139, 92, 246, 0.1) 0%, transparent 70%); }
+        .app-container { width: 100%; max-width: 450px; background: rgba(10, 10, 15, 0.95); min-height: 100vh; display: flex; flex-direction: column; position: relative; overflow: hidden; border-left: 1px solid #1f2937; border-right: 1px solid #1f2937; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
+        .ws-btn { font-family: 'Inter', sans-serif; font-weight: 600; transition: all 0.2s; cursor: pointer; }
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .toast { position: absolute; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 50; }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+        .damage-flash { animation: flash 0.3s forwards; }
+        @keyframes flash { 0%, 100% { background: rgba(10, 10, 15, 0.95); } 50% { background: rgba(239, 68, 68, 0.3); } }
+    </style>
+</head>
+<body>
+
+    <div class="app-container" id="app-body">
+        
+        <!-- Toast Notification -->
+        <div id="hw-toast" class="toast bg-green-600 text-white px-6 py-2 rounded-full font-ui font-bold tracking-widest shadow-[0_0_15px_rgba(34,197,94,0.5)] flex items-center gap-2">
+            <i class="fas fa-check-circle"></i> CODE ACCEPTED
+        </div>
+
+        <!-- Start Screen -->
+        <div id="screen-start" class="flex-1 flex flex-col items-center justify-center p-8 text-center z-10 fade-in">
+            <i class="fas fa-project-diagram text-6xl text-ws-sciCyan mb-6 animate-pulse"></i>
+            <h1 class="font-epic text-4xl text-white mb-2 tracking-widest">TIMELINE FIXER</h1>
+            <p class="font-ui text-ws-fanGold text-xl tracking-[0.2em] mb-8 font-bold">B2 SIMULATION HW</p>
+            
+            <div class="bg-gray-900/80 p-6 rounded-xl border border-gray-800 w-full mb-8 shadow-inner text-left">
+                <p class="font-bold text-gray-300 font-base mb-3"><i class="fas fa-bullseye text-ws-sciCyan mr-2"></i> Objective:</p>
+                <p class="text-sm text-gray-400 font-base leading-relaxed mb-4">Complete 15 logic nodes to repair the Timeline (3rd & Mixed Conditionals). You have 3 lives.</p>
+                <div class="flex gap-2">
+                    <i class="fas fa-heart text-red-500"></i><i class="fas fa-heart text-red-500"></i><i class="fas fa-heart text-red-500"></i>
+                </div>
+            </div>
+            
+            <button onclick="startGame()" class="ws-btn font-epic bg-white text-black w-full py-4 text-xl rounded shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:bg-gray-200 uppercase tracking-widest">BEGIN SYNC</button>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="screen-quiz" class="flex-1 flex flex-col hidden z-10">
+            <!-- Header HUD -->
+            <header class="p-4 border-b border-gray-800 bg-black/50 flex justify-between items-center shrink-0">
+                <div class="font-ui text-gray-400 tracking-widest font-bold text-sm">NODE <span id="q-current" class="text-white text-lg">1</span>/15</div>
+                <div class="flex gap-1" id="hp-container">
+                    <i class="fas fa-heart text-red-500"></i>
+                    <i class="fas fa-heart text-red-500"></i>
+                    <i class="fas fa-heart text-red-500"></i>
+                </div>
+            </header>
+            
+            <!-- Progress Bar -->
+            <div class="w-full h-1 bg-gray-900"><div id="progress-bar" class="h-full bg-ws-sciCyan w-0 transition-all duration-300"></div></div>
+
+            <!-- Question Area -->
+            <div class="flex-1 flex flex-col justify-center p-6 fade-in" id="q-area">
+                <p class="text-xs font-ui text-ws-void uppercase tracking-[0.3em] font-bold mb-4 text-center">Decrypting Logic...</p>
+                <div class="bg-gray-900/50 border border-gray-800 p-8 rounded-xl shadow-inner min-h-[160px] flex items-center justify-center mb-8">
+                    <p id="q-text" class="text-xl md:text-2xl font-base font-bold text-white text-center leading-relaxed">
+                        Loading...
+                    </p>
+                </div>
+
+                <!-- Options -->
+                <div class="flex flex-col gap-4" id="options-container">
+                    <!-- Buttons injected via JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- End Screen -->
+        <div id="screen-end" class="flex-1 flex flex-col items-center justify-center p-8 text-center hidden z-10">
+            <i id="end-icon" class="fas fa-trophy text-7xl text-ws-fanGold mb-6 drop-shadow-[0_0_20px_#f59e0b]"></i>
+            <h1 id="end-title" class="font-epic text-4xl text-white mb-2 tracking-widest">SYNC COMPLETE</h1>
+            <p class="font-ui text-gray-400 text-lg tracking-[0.2em] mb-8 font-bold">FINAL SCORE: <span id="final-score" class="text-white text-2xl mx-1">15</span>/15</p>
+            <p id="end-msg" class="text-gray-300 font-base mb-10 text-center">The Timeline has been restored. Excellent work.</p>
+            <button onclick="location.reload()" class="ws-btn font-epic uppercase tracking-widest border border-white text-white w-full py-4 text-xl rounded hover:bg-white hover:text-black">RETURN TO BASE</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            // Level 1: 3rd Conditional (Past Unreal)
+            { q: "If they [BLANK] the warning, the spaceship wouldn't have crashed.", options: ["had heeded", "heeded", "would have heeded"], answer: "had heeded" },
+            { q: "Mio wouldn't have escaped if Zoe [BLANK] her with magic.", options: ["hadn't helped", "didn't help", "wouldn't help"], answer: "hadn't helped" },
+            { q: "If I had known the dragon was there, I [BLANK] that path.", options: ["wouldn't have taken", "wouldn't take", "hadn't taken"], answer: "wouldn't have taken" },
+            { q: "What [BLANK] if the portal had closed earlier?", options: ["would have happened", "would happen", "had happened"], answer: "would have happened" },
+            { q: "If the algorithm [BLANK], the simulation would have ended peacefully.", options: ["hadn't glitched", "hasn't glitched", "didn't glitch"], answer: "hadn't glitched" },
+            
+            // Level 2: Mixed Conditionals (Past Action -> Present Result)
+            { q: "If you hadn't touched that crystal yesterday, we [BLANK] trapped here now.", options: ["wouldn't be", "wouldn't have been", "aren't"], answer: "wouldn't be" },
+            { q: "I [BLANK] starving right now if I had eaten breakfast.", options: ["wouldn't be", "wouldn't have been", "wasn't"], answer: "wouldn't be" },
+            { q: "If he had studied the ancient runes, he [BLANK] how to read this wall.", options: ["would know", "would have known", "knew"], answer: "would know" },
+            { q: "They wouldn't be lost in the woods if they [BLANK] a map.", options: ["had brought", "brought", "would bring"], answer: "had brought" },
+            { q: "If I had backed up my data, I [BLANK] so stressed today.", options: ["wouldn't be", "wouldn't have been", "am not"], answer: "wouldn't be" },
+            
+            // Level 3: Advanced/Tricky Mixes
+            { q: "If she [BLANK] a better writer, her script wouldn't have been rejected last week.", options: ["were", "had been", "was"], answer: "were" }, // Present condition -> Past result (Mixed type 2)
+            { q: "We wouldn't have met the alien if we [BLANK] living in this sector.", options: ["weren't", "hadn't been", "wouldn't be"], answer: "weren't" }, // Present condition -> Past result
+            { q: "Imagine: if the Void Syntax [BLANK] won, our reality would be entirely different now.", options: ["had", "would have", "has"], answer: "had" },
+            { q: "She would have the highest score now if she [BLANK] the final boss.", options: ["had defeated", "defeated", "would defeat"], answer: "had defeated" },
+            { q: "I am completely exhausted. If I hadn't worked all night, I [BLANK] better right now.", options: ["would feel", "would have felt", "felt"], answer: "would feel" }
+        ];
+
+        let currentQIndex = 0;
+        let score = 0;
+        let hp = 3;
+        let isAnswering = false;
+
+        function startGame() {
+            document.getElementById('screen-start').classList.add('hidden');
+            document.getElementById('screen-quiz').classList.remove('hidden');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            isAnswering = false;
+            const qData = questions[currentQIndex];
+            
+            document.getElementById('q-current').innerText = currentQIndex + 1;
+            document.getElementById('progress-bar').style.width = `${((currentQIndex) / 15) * 100}%`;
+            
+            // Render question with a styled blank
+            const qHTML = qData.q.replace('[BLANK]', `<span id="the-blank" class="border-b-2 border-gray-500 px-4 mx-1 text-transparent transition-all duration-300">___</span>`);
+            document.getElementById('q-text').innerHTML = qHTML;
+
+            // Render options
+            const optsContainer = document.getElementById('options-container');
+            optsContainer.innerHTML = '';
+            
+            // Randomize options visually
+            const shuffledOpts = [...qData.options].sort(() => Math.random() - 0.5);
+            
+            shuffledOpts.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'ws-btn bg-black/60 border border-gray-700 text-gray-200 w-full py-4 px-6 text-lg rounded shadow-md hover:bg-gray-800 text-left';
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(opt, btn, qData.answer);
+                optsContainer.appendChild(btn);
+            });
+
+            // Trigger fade in
+            const qArea = document.getElementById('q-area');
+            qArea.classList.remove('fade-in');
+            void qArea.offsetWidth;
+            qArea.classList.add('fade-in');
+        }
+
+        function checkAnswer(selected, btn, correct) {
+            if(isAnswering) return;
+            isAnswering = true;
+
+            const blank = document.getElementById('the-blank');
+            blank.innerText = selected;
+            blank.classList.remove('text-transparent');
+
+            if(selected === correct) {
+                // Correct
+                btn.classList.replace('bg-black/60', 'bg-green-600');
+                btn.classList.replace('text-gray-200', 'text-white');
+                btn.classList.replace('border-gray-700', 'border-green-500');
+                blank.classList.replace('border-gray-500', 'border-green-500');
+                blank.classList.add('text-green-400');
+                score++;
+                showToast("LOGIC VERIFIED", true);
+            } else {
+                // Wrong
+                btn.classList.replace('bg-black/60', 'bg-red-600');
+                btn.classList.replace('text-gray-200', 'text-white');
+                btn.classList.replace('border-gray-700', 'border-red-500');
+                blank.classList.replace('border-gray-500', 'border-red-500');
+                blank.classList.add('text-red-400');
+                
+                // Highlight correct
+                Array.from(document.getElementById('options-container').children).forEach(b => {
+                    if(b.innerText === correct) {
+                        b.classList.replace('bg-black/60', 'bg-green-600/30');
+                        b.classList.replace('border-gray-700', 'border-green-500');
+                    }
+                });
+
+                showToast("PARADOX ERROR", false);
+                loseHP();
+            }
+
+            setTimeout(() => {
+                currentQIndex++;
+                if(currentQIndex < questions.length && hp > 0) {
+                    loadQuestion();
+                } else {
+                    endGame();
+                }
+            }, 1800);
+        }
+
+        function loseHP() {
+            hp--;
+            const hpContainer = document.getElementById('hp-container');
+            if(hpContainer.children[hp]) {
+                hpContainer.children[hp].classList.replace('text-red-500', 'text-gray-700');
+            }
+            const body = document.getElementById('app-body');
+            body.classList.remove('damage-flash');
+            void body.offsetWidth;
+            body.classList.add('damage-flash');
+        }
+
+        function showToast(msg, isSuccess) {
+            const toast = document.getElementById('hw-toast');
+            toast.innerHTML = isSuccess ? `<i class="fas fa-check-circle"></i> ${msg}` : `<i class="fas fa-times-circle"></i> ${msg}`;
+            toast.className = `toast px-6 py-2 rounded-full font-ui font-bold tracking-widest flex items-center gap-2 text-white shadow-lg ${isSuccess ? 'bg-green-600 shadow-[0_0_15px_rgba(34,197,94,0.5)]' : 'bg-red-600 shadow-[0_0_15px_rgba(239,68,68,0.5)]'}`;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 1200);
+        }
+
+        function endGame() {
+            document.getElementById('screen-quiz').classList.add('hidden');
+            document.getElementById('screen-end').classList.remove('hidden');
+            document.getElementById('screen-end').classList.add('fade-in');
+            
+            document.getElementById('final-score').innerText = score;
+            
+            const icon = document.getElementById('end-icon');
+            const title = document.getElementById('end-title');
+            const msg = document.getElementById('end-msg');
+
+            if(hp === 0) {
+                icon.className = "fas fa-skull text-7xl text-red-500 mb-6 drop-shadow-[0_0_20px_#ef4444]";
+                title.innerText = "TIMELINE DESTROYED";
+                title.classList.replace('text-white', 'text-red-500');
+                msg.innerText = "The Void Syntax overtook the system because of the logic errors. You must train more and try again.";
+            } else if (score === 15) {
+                icon.className = "fas fa-crown text-7xl text-ws-fanGold mb-6 drop-shadow-[0_0_20px_#f59e0b]";
+                title.innerText = "FLAWLESS VICTORY";
+                msg.innerText = "Absolute mastery of Advanced Conditionals. The timeline is safe!";
+            } else {
+                icon.className = "fas fa-thumbs-up text-7xl text-ws-sciCyan mb-6 drop-shadow-[0_0_20px_#06b6d4]";
+                title.innerText = "SYNC COMPLETE";
+                msg.innerText = "Good job! You helped reverse the anomaly, but there is still room to improve the logic.";
+            }
+        }
+    </script>
+</body>
+</html>
